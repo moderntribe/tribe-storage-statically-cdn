@@ -47,7 +47,7 @@ class Image {
 	 * @return array|bool
 	 */
 	public function downsize( $downsize, int $id, $size ) {
-		$cache_key = md5( "{$id}_$size" );
+		$cache_key = md5( $id . '_' . json_encode( $size ) );
 
 		$data = wp_cache_get( $cache_key, self::CACHE_GROUP );
 
@@ -76,11 +76,14 @@ class Image {
 			if ( empty( $size_data ) ) {
 				return false;
 			}
+
+			$width  = $size_data['width'] ?? 0;
+			$height = $size_data['height'] ?? 0;
+		} else {
+			[ $width, $height ] = $size;
 		}
 
-		$url    = wp_get_attachment_url( $id );
-		$width  = $size_data['width'] ?? 0;
-		$height = $size_data['height'] ?? 0;
+		$url = wp_get_attachment_url( $id );
 
 		/**
 		 * Filter statically.io params.

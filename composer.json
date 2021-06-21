@@ -11,6 +11,7 @@
   ],
   "require": {
     "php": "^7.3",
+    "ext-json": "*",
     "php-di/php-di": "^6.0",
     "moderntribe/tribe-storage": "^2.0"
   },
