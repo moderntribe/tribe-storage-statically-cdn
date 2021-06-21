@@ -1,5 +1,5 @@
 {
-  "name": "moderntribe/tribe-storage-statically-io",
+  "name": "moderntribe/tribe-storage-statically-cdn",
   "description": "Tribe Storage Plugin to add statically.io CDN support",
   "minimum-stability": "dev",
   "prefer-stable": true,
