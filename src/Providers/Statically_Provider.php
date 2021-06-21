@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tribe\Storage\Statically\Providers;
+namespace Tribe\Storage\Plugin\Statically\Providers;
 
 use Tribe\Storage\Plugin\Statically\Image;
 use Tribe\Storage\Plugin\Statically\Metadata;
