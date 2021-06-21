@@ -6,12 +6,7 @@ use Tribe\Storage\Plugin\Statically\Statically_Definition_Provider;
 use Tribe\Storage\Statically\Providers\Statically_Provider;
 
 // Load this plugin's container definitions
-Plugin_Loader::get_instance()->add_definitions( new Statically_Definition_Provider() );
+Plugin_Loader::get_instance()->add_definition_provider( new Statically_Definition_Provider() );
 
-if ( function_exists( 'tribe_storage' ) && function_exists( 'add_filter' ) ) {
-	add_filter( 'tribe/storage/providers', static function ( $providers ) {
-		$providers[] = tribe_storage()->container()->make( Statically_Provider::class );
-
-		return $providers;
-	} );
-}
+// Load this plugin's service providers
+Plugin_Loader::get_instance()->add_service_provider( Statically_Provider::class );
