@@ -61,6 +61,7 @@ class Metadata {
 				'height' => '',
 				'crop'   => false,
 			];
+
 			if ( isset( $_wp_additional_image_sizes[ $s ]['width'] ) ) {
 				// For theme-added sizes.
 				$sizes[ $s ]['width'] = (int) $_wp_additional_image_sizes[ $s ]['width'];
