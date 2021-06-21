@@ -12,7 +12,7 @@ Add the following to the composer.json `repositories` object:
 
 ```json
   "repositories": [
-      {
+      {3
         "type": "vcs",
         "url": "git@github.com:moderntribe/tribe-storage-statically-cdn.git"
       }
