@@ -1,0 +1,45 @@
+{
+  "name": "moderntribe/tribe-storage-statically-io",
+  "description": "Tribe Storage Plugin to add statically.io CDN support",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:moderntribe/tribe-storage.git"
+    }
+  ],
+  "require": {
+    "php": "^7.3",
+    "php-di/php-di": "^6.0",
+    "moderntribe/tribe-storage": "^2.0"
+  },
+  "require-dev": {
+    "brain/monkey": "2.*",
+    "phpunit/phpunit": "^9",
+    "php-mock/php-mock-mockery": "^1.3",
+    "moderntribe/coding-standards": "^2.0",
+    "php-stubs/wordpress-stubs": "^5.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "Tribe\\Storage\\Plugin\\Statically\\": "src"
+    },
+    "files": [
+      "plugin.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tribe\\Storage\\Plugin\\Statically\\Tests\\": "tests"
+    },
+    "files": [
+      "tests/Bootstrap.php"
+    ]
+  },
+  "config": {
+    "platform": {
+      "php": "7.3.0"
+    }
+  }
+}
