@@ -1,6 +1,6 @@
 # Tribe Storage Plugin: Statically.io
 
-[![PHPCS + Unit Tests](https://github.com/moderntribe/tribe-storage-aws-s3/actions/workflows/pull-request.yml/badge.svg)](https://github.com/moderntribe/tribe-storage-aws-s3/actions/workflows/pull-request.yml)
+[![PHPCS + Unit Tests](https://github.com/moderntribe/tribe-storage-statically-cdn/actions/workflows/pull-request.yml/badge.svg)](https://github.com/moderntribe/tribe-storage-statically-cdn/actions/workflows/pull-request.yml)
 ![php 7.3+](https://img.shields.io/badge/php-min%207.3-red.svg)
 
 Provides dynamic image sizing via [statically.io](https://statically.io/) and disables WordPress's automatic 
