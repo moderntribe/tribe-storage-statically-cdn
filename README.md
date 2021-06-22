@@ -45,7 +45,7 @@ define( 'TRIBE_STORAGE_URL', 'https://account.blob.core.windows.net/container' )
 URL rewriting would look as follows:
 
 - Original: `https://example.com/wp-content/uploads/sites/4/2021/06/image.jpg`
-- Rewritten: `https://cdn.statically.io/img/account.blob.core.windows.net/container/f=auto,w=1024,h=1024/wp-content/uploads/sites/4/2021/06/image.jpg`
+- Rewritten: `https://cdn.statically.io/img/account.blob.core.windows.net/f=auto,w=1024,h=1024/container/sites/4/2021/06/image.jpg`
 
 ### Use statically.io as a proxy via Nginx
 
@@ -61,27 +61,16 @@ define( 'TRIBE_STORAGE_STATICALLY_PROXY', true );
 > above it would be: `account.blob.core.windows.net/container`
 
 ```nginx
-# Root site
-location ~* ^/wp-content/uploads(.+)\.(?:gif|jpg|png|jpeg|pdf) {
-    add_header X-Image-Path "$uri" always;
-    try_files $uri $uri/ @uploads;
+# Root site and sub sites
+location ~* ^/(.+)?wp-content/uploads {
+    try_files $uri $uri/ @statically;
 }
 
-# Multisite sub directory
-location ~* ^/(.+)/wp-content/uploads(.+)\.(?:gif|jpg|png|jpeg|pdf) {
-    add_header X-Image-Path "$uri" always;
-    try_files $uri $uri/ @uploads;
-}
+# Check statically first
+location @statically {
+    # adjust the /container below to your actual container name
+    rewrite "^/(.+)?wp-content/uploads/(.*=.*?[\/])?(.+)$" /$2container/$3 break;
 
-# Sub sites with locale, e.g /en-us/wp-content/uploads...
-location ~* "^/[a-z]{2}-[a-z]{2}/wp-content/uploads" {
-    try_files $uri $uri/ @uploads;
-}
-
-location @uploads {
-    rewrite "^/[a-z]{2}-[a-z]{2}/wp-content/uploads(.*)$" $1 break;
-    rewrite ^/(.*)/wp-content/uploads(.*)$ $2 break;
-    rewrite ^/wp-content/uploads(.*)$ $1 break;
     proxy_http_version 1.1;
     resolver 1.1.1.1;
 
@@ -91,11 +80,48 @@ location @uploads {
 
     proxy_hide_header Set-Cookie;
     proxy_ignore_headers Set-Cookie;
+
     proxy_intercept_errors on;
+    recursive_error_pages on;
+    error_page 400 404 500 = @uploads;
 
     add_header X-Image-Path "$uri" always;
+    
+    proxy_pass https://cdn.statically.io/img/account.blob.core.windows.net$uri;
+}
 
-    proxy_pass https://cdn.statically.io/img/<PUBLIC CLOUD PROVIDER HOST + PATH>$uri;
+# Fallback to check Azure directly
+location @uploads {
+    # remove any statically.io params, e.g f=auto,w=518,h=291/
+    rewrite ^/(.*=.*?[\/])?(.+)$ /$2 break;
+    proxy_http_version 1.1;
+    resolver 1.1.1.1;
+
+    proxy_set_header Connection '';
+    proxy_set_header Authorization '';
+    proxy_set_header Host account.blob.core.windows.net;
+
+    proxy_hide_header x-ms-blob-type;
+    proxy_hide_header x-ms-lease-status;
+    proxy_hide_header x-ms-request-id;
+    proxy_hide_header x-ms-version;
+    proxy_hide_header Set-Cookie;
+    proxy_ignore_headers Set-Cookie;
+    
+    proxy_intercept_errors on;
+    recursive_error_pages on;
+    error_page 400 404 500 = @imageerror;
+
+    add_header X-Image-Path "$uri" always;
+    add_header Cache-Control max-age=31536000;
+
+    proxy_pass https://account.blob.core.windows.net$uri;
+}
+
+# If both the above fail, show the default Nginx 404 error page
+location @imageerror {
+    add_header X-Error-Uri "$uri" always;
+    return 404;
 }
 ```
 
@@ -103,6 +129,7 @@ URL rewriting would look as follows, and proxied to Statically behind the scenes
 
 - Original: `https://example.com/wp-content/uploads/sites/4/2021/06/image.jpg`
 - Rewritten: `https://example.com/wp-content/uploads/f=auto,w=1024,h=1024/sites/4/2021/06/image.jpg`
+- Proxied URL: `https://cdn.statically.io/img/account.blob.core.windows.net/f=auto,w=1024,h=1024/container/sites/4/2021/06/image.jpg`
 
 ## Automated Testing
 
