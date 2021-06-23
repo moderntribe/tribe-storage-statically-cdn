@@ -30,7 +30,7 @@ class Image {
 			return $url;
 		}
 
-		return $this->build_statically_io_url( $url );
+		return esc_url( $this->build_statically_io_url( $url ) );
 	}
 
 	/**
@@ -150,6 +150,47 @@ class Image {
 		wp_cache_set( $cache_key, $data, self::CACHE_GROUP );
 
 		return $data;
+	}
+
+	/**
+	 * Update each image size by replacing the main image's statically.io params with the proper dimenisions.
+	 *
+	 * @filter wp_calculate_image_srcset
+	 *
+	 * @param array  $sources
+	 * @param array  $size_array
+	 * @param string $img_src
+	 * @param array  $image_meta
+	 * @param int    $attachment_id
+	 *
+	 * @return array
+	 */
+	public function filter_srcset( array $sources, array $size_array, string $img_src, array $image_meta, int $attachment_id ): array {
+		foreach ( $sources as &$source ) {
+			if ( 'w' !== $source['descriptor'] ) {
+				continue;
+			}
+
+			// Match statically.io params f=auto,w=500,h=500/
+			$params = preg_match( "/.=.*?[\/]/", $img_src, $matches );
+
+			if ( ! $params ) {
+				continue;
+			}
+
+			$replace       = (string) apply_filters(
+				'tribe/storage/plugin/statically/srcset/source_params',
+				sprintf( 'f=auto,%s=%d/', $source['descriptor'], $source['value'] ),
+				$params,
+				$img_src,
+				$source,
+				$attachment_id,
+			);
+			$url           = str_replace( reset( $matches ), $replace, $img_src );
+			$source['url'] = esc_url( $url );
+		}
+
+		return (array) apply_filters( 'tribe/storage/plugin/statically/srcset/sources', $sources );
 	}
 
 	/**

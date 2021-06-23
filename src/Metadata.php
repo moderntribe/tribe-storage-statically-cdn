@@ -11,7 +11,7 @@ use Tribe\Storage\Cache\Cache;
  */
 class Metadata {
 
-	public const CACHE_KEY = 'sizes';
+	public const CACHE_KEY_PREFIX = 'sizes_';
 
 	/**
 	 * @var \Tribe\Storage\Cache\Cache
@@ -42,7 +42,7 @@ class Metadata {
 			return $data;
 		}
 
-		$cache = $this->cache->get( self::CACHE_KEY );
+		$cache = $this->cache->get( self::CACHE_KEY_PREFIX . $attachment_id );
 
 		if ( null !== $cache ) {
 			return $cache;
@@ -92,7 +92,7 @@ class Metadata {
 
 		$data['sizes'] = $sizes;
 
-		$this->cache->set( self::CACHE_KEY, $data );
+		$this->cache->set( self::CACHE_KEY_PREFIX . $attachment_id, $data );
 
 		return $data;
 	}
