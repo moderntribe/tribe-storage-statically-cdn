@@ -38,7 +38,7 @@ class MetadataTest extends TestCase {
 			'sizes' => [],
 		];
 
-		$this->cache->shouldReceive( 'get' )->once()->with( Metadata::CACHE_KEY )->andReturnNull();
+		$this->cache->shouldReceive( 'get' )->once()->with( Metadata::CACHE_KEY_PREFIX . 123 )->andReturnNull();
 
 		Functions\expect( 'wp_get_additional_image_sizes' )->once()->andReturn( [
 			'custom' => [
@@ -80,7 +80,7 @@ class MetadataTest extends TestCase {
 			],
 		];
 
-		$this->cache->shouldReceive( 'set' )->once()->with( Metadata::CACHE_KEY, $expected );
+		$this->cache->shouldReceive( 'set' )->once()->with( Metadata::CACHE_KEY_PREFIX . 123, $expected );
 
 		$data = $this->metadata->get( $original_meta, 123 );
 

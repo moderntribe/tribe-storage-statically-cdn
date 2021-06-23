@@ -34,11 +34,15 @@ class Statically_Provider implements Providable {
 
 		add_filter( 'image_downsize', function ( $downsize, $id, $size ) {
 			return $this->image->downsize( $downsize, (int) $id, $size );
-		}, 5, 3 );
+		}, 10, 3 );
 
 		add_filter( 'tribe/storage/attachment_url', function ( $url ) {
 			return $this->image->attachment_url( (string) $url );
 		} );
+
+		add_filter( 'wp_calculate_image_srcset', function ( $sources, $size_array, $image_src, $image_meta, $attachment_id ) {
+			return $this->image->filter_srcset( (array) $sources, (array) $size_array, (string) $image_src, (array) $image_meta, (int) $attachment_id );
+		}, 10, 5 );
 
 		add_filter( 'wp_get_attachment_metadata', function ( $data, $attachment_id ) {
 			return $this->metadata->get( $data, (int) $attachment_id );
