@@ -174,17 +174,20 @@ class Image {
 			// Match statically.io params f=auto,w=500,h=500/
 			$params = preg_match( "/.=.*?[\/]/", $img_src, $matches );
 
-			if ( $params ) {
-				$replace = (string) apply_filters( 'tribe/storage/plugin/statically/srcset/source_params',
-					sprintf( 'f=auto,%s=%d/', $source['descriptor'], $source['value'] ),
-					$params,
-					$img_src,
-					$source,
-					$attachment_id,
-				);
-				$url           = str_replace( reset( $matches ), $replace, $img_src );
-				$source['url'] = esc_url( $url );
+			if ( ! $params ) {
+				continue;
 			}
+
+			$replace       = (string) apply_filters(
+				'tribe/storage/plugin/statically/srcset/source_params',
+				sprintf( 'f=auto,%s=%d/', $source['descriptor'], $source['value'] ),
+				$params,
+				$img_src,
+				$source,
+				$attachment_id,
+			);
+			$url           = str_replace( reset( $matches ), $replace, $img_src );
+			$source['url'] = esc_url( $url );
 		}
 
 		return (array) apply_filters( 'tribe/storage/plugin/statically/srcset/sources', $sources );
