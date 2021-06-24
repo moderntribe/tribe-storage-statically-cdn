@@ -1,8 +1,27 @@
 {
   "name": "moderntribe/tribe-storage-statically-cdn",
   "description": "Tribe Storage Plugin to add statically.io CDN support",
-  "minimum-stability": "dev",
-  "prefer-stable": true,
+  "keywords": [
+    "moderntribe",
+    "tribe-storage",
+    "tribe-storage-plugin",
+    "cdn",
+    "statically.io",
+    "nginx",
+    "proxy",
+    "wordpress"
+  ],
+  "authors": [
+    {
+      "name": "Justin Frydman",
+      "role": "Developer"
+    },
+    {
+      "name": "Modern Tribe",
+      "email": "admin@tri.be",
+      "homepage": "https://tri.be"
+    }
+  ],
   "repositories": [
     {
       "type": "vcs",
@@ -41,5 +60,7 @@
     "platform": {
       "php": "7.3.0"
     }
-  }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
