@@ -19,6 +19,7 @@ pimple.json
 
 # Project #
 ############
+/composer.lock
 /vendor
 /phpcs.xml
 /phpunit.xml
