@@ -16,7 +16,7 @@ class ImageTest extends TestCase {
 	public function test_it_ignores_url_modification() {
 		Functions\when( 'esc_url' )->returnArg( 1 );
 
-		$url = ( new Image() )->attachment_url( 'https://example.com/wp-content/uploads/sites/2/2021/06/test.jpg' );
+		$url = ( new Image() )->attachment_url( 'https://example.com/wp-content/uploads/sites/2/2021/06/test.jpg', 123 );
 		$this->assertSame( 'https://example.com/wp-content/uploads/sites/2/2021/06/test.jpg', $url );
 	}
 
@@ -24,15 +24,25 @@ class ImageTest extends TestCase {
 		define( 'TRIBE_STORAGE_STATICALLY_PROXY', true );
 		Functions\when( 'esc_url' )->returnArg( 1 );
 
-		$url = ( new Image() )->attachment_url( 'https://example.com/wp-content/uploads/sites/2/2021/06/test.jpg' );
+		$url = ( new Image() )->attachment_url( 'https://example.com/wp-content/uploads/sites/2/2021/06/test.jpg', 123 );
 		$this->assertSame( 'https://example.com/wp-content/uploads/sites/2/2021/06/test.jpg', $url );
+	}
+
+	public function test_it_uses_storage_url_when_not_an_image_and_no_proxy_is_defined() {
+		define( 'TRIBE_STORAGE_URL', 'https://s3-us-east-1.amazonaws.com/test-bucket' );
+		Functions\when( 'esc_url' )->returnArg( 1 );
+		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'video/mp4' );
+
+		$url = ( new Image() )->attachment_url( 'https://s3-us-east-1.amazonaws.com/test-bucket/sites/2/2021/06/test.jpg', 123 );
+		$this->assertSame( 'https://s3-us-east-1.amazonaws.com/test-bucket/sites/2/2021/06/test.jpg', $url );
 	}
 
 	public function test_it_changes_to_statically_io_url() {
 		define( 'TRIBE_STORAGE_URL', 'https://account.blob.core.windows.net/prod' );
 		Functions\when( 'esc_url' )->returnArg( 1 );
+		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/jpeg' );
 
-		$url = ( new Image() )->attachment_url( 'https://account.blob.core.windows.net/prod/sites/2/2021/06/test.jpg' );
+		$url = ( new Image() )->attachment_url( 'https://account.blob.core.windows.net/prod/sites/2/2021/06/test.jpg', 123 );
 		$this->assertSame( 'https://cdn.statically.io/img/account.blob.core.windows.net/prod/sites/2/2021/06/test.jpg', $url );
 	}
 
@@ -56,6 +66,7 @@ class ImageTest extends TestCase {
 			],
 		] );
 		Functions\expect( 'wp_get_attachment_url' )->once()->with( 123 )->andReturn( $url );
+		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/jpeg' );
 		Functions\expect( 'image_constrain_size_for_editor' )->once()->with( 150, 150, $size )->andReturn( [
 			150,
 			150,
@@ -88,6 +99,7 @@ class ImageTest extends TestCase {
 		Functions\expect( 'wp_attachment_is_image' )->once()->with( 123 )->andReturn( true );
 		Functions\expect( 'wp_get_attachment_metadata' )->once()->with( 123 )->andReturn( [] );
 		Functions\expect( 'wp_get_attachment_url' )->once()->with( 123 )->andReturn( $url );
+		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/jpeg' );
 		Functions\expect( 'image_constrain_size_for_editor' )->once()->with( 250, 250, $size )->andReturn( [
 			250,
 			250,
@@ -164,6 +176,7 @@ class ImageTest extends TestCase {
 		$img_src = 'https://example.com/wp-content/uploads/f=auto,w=1500,h=1500/sites/4/2021/06/sample-1500.png';
 
 		Functions\when( 'esc_url' )->returnArg( 1 );
+		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/png' );
 
 		$image   = new Image();
 		$results = $image->filter_srcset( $original_sources, $size_array, $img_src, [], 123 );
@@ -280,6 +293,7 @@ class ImageTest extends TestCase {
 		$img_src = 'https://account.blob.core.windows.net/f=auto,w=1500,h=1500/container/sites/4/2021/06/sample-1500.png';
 
 		Functions\when( 'esc_url' )->returnArg( 1 );
+		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/png' );
 
 		$image   = new Image();
 		$results = $image->filter_srcset( $original_sources, $size_array, $img_src, [], 123 );
@@ -330,6 +344,63 @@ class ImageTest extends TestCase {
 			1500 =>
 				[
 					'url'        => 'https://account.blob.core.windows.net/f=auto,w=1500/container/sites/4/2021/06/sample-1500.png',
+					'descriptor' => 'w',
+					'value'      => 1500,
+				],
+		];
+
+		$this->assertSame( $expected, $results );
+	}
+
+	public function test_it_ignores_svg_sizes() {
+		$original_sources = [
+			150  =>
+				[
+					'url'        => 'https://account.blob.core.windows.net/container/sites/4/2021/06/sample.svg',
+					'descriptor' => 'w',
+					'value'      => 150,
+				],
+			300  =>
+				[
+					'url'        => 'https://account.blob.core.windows.net/container/sites/4/2021/06/sample.svg',
+					'descriptor' => 'w',
+					'value'      => '300',
+				],
+			1500 =>
+				[
+					'url'        => 'https://account.blob.core.windows.net/container/sites/4/2021/06/sample.svg',
+					'descriptor' => 'w',
+					'value'      => 1500,
+				],
+		];
+		$size_array = [
+			1500,
+			1500,
+		];
+		$img_src = 'https://example.com/wp-content/uploads/f=auto,w=1500,h=1500/sites/4/2021/06/sample.svg';
+
+		Functions\when( 'esc_url' )->returnArg( 1 );
+		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/svg+xml' );
+
+		$image   = new Image();
+		$results = $image->filter_srcset( $original_sources, $size_array, $img_src, [], 123 );
+
+		$expected = [
+			150  =>
+				[
+					'url'        => 'https://account.blob.core.windows.net/container/sites/4/2021/06/sample.svg',
+					'descriptor' => 'w',
+					'value'      => 150,
+				],
+			300  =>
+				[
+					'url'        => 'https://account.blob.core.windows.net/container/sites/4/2021/06/sample.svg',
+					'descriptor' => 'w',
+					'value'      => '300',
+				],
+			1500 =>
+				[
+					'url'        => 'https://account.blob.core.windows.net/container/sites/4/2021/06/sample.svg',
 					'descriptor' => 'w',
 					'value'      => 1500,
 				],
