@@ -3,7 +3,7 @@
 namespace Tribe\Storage\Plugin\Statically;
 
 /**
- * Class Image
+ * An Image Attachment.
  *
  * @package Tribe\Storage\Plugin\Statically
  */
@@ -17,16 +17,21 @@ class Image {
 	 *
 	 * @filter tribe/storage/attachment_url
 	 *
-	 * @param  string  $url
+	 * @param string $url
+	 * @param int    $attachment_id
 	 *
 	 * @return string
 	 */
-	public function attachment_url( string $url ): string {
+	public function attachment_url( string $url, int $attachment_id ): string {
 		if ( ! defined( 'TRIBE_STORAGE_URL' ) || ! TRIBE_STORAGE_URL ) {
 			return $url;
 		}
 
 		if ( defined( 'TRIBE_STORAGE_STATICALLY_PROXY' ) && TRIBE_STORAGE_STATICALLY_PROXY ) {
+			return $url;
+		}
+
+		if ( ! $this->is_image( $attachment_id ) ) {
 			return $url;
 		}
 
@@ -100,6 +105,11 @@ class Image {
 			'h' => $height,
 		], $id, $size );
 
+		// Statically doesn't support size params with SVG's
+		if ( $this->bypass_image_resizing( $id ) ) {
+			$params = [];
+		}
+
 		$params      = array_filter( $params );
 		$params      = http_build_query( $params, '', ',' );
 		$uploads_url = (string) apply_filters( 'tribe/storage/plugin/statically/wp_content_url', WP_CONTENT_URL . '/uploads/' );
@@ -153,7 +163,7 @@ class Image {
 	}
 
 	/**
-	 * Update each image size by replacing the main image's statically.io params with the proper dimenisions.
+	 * Update each image size by replacing the main image's statically.io params with the proper dimensions.
 	 *
 	 * @filter wp_calculate_image_srcset
 	 *
@@ -166,6 +176,10 @@ class Image {
 	 * @return array
 	 */
 	public function filter_srcset( array $sources, array $size_array, string $img_src, array $image_meta, int $attachment_id ): array {
+		if ( $this->bypass_image_resizing( $attachment_id ) ) {
+			return (array) apply_filters( 'tribe/storage/plugin/statically/srcset/sources', $sources );
+		}
+
 		foreach ( $sources as &$source ) {
 			if ( 'w' !== $source['descriptor'] ) {
 				continue;
@@ -209,6 +223,44 @@ class Image {
 		$bucket      = $parsed['path'] ?? '';
 
 		return str_replace( $storage_url, "https://cdn.statically.io/img/$domain$bucket", $original_url );
+	}
+
+	/**
+	 * Check if this is an image.
+	 *
+	 * @param int $attachment_id
+	 *
+	 * @return bool
+	 */
+	protected function is_image( int $attachment_id ): bool {
+		$mime_types = (array) apply_filters( 'tribe/storage/plugin/statically/image_mime_types', [
+			'image/jpeg',
+			'image/png',
+			'image/gif',
+			'image/webp',
+			'image/svg+xml',
+		] );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		return in_array( $mime_type, $mime_types, true );
+	}
+
+	/**
+	 * Whether we should bypass resizing this attachment.
+	 *
+	 * @param int $attachment_id
+	 *
+	 * @return bool
+	 */
+	protected function bypass_image_resizing( int $attachment_id ): bool {
+		$mime_types = (array) apply_filters( 'tribe/storage/plugin/statically/bypass_resizing_mime_types', [
+			'image/svg+xml',
+		] );
+
+		$mime_type = get_post_mime_type( $attachment_id );
+
+		return in_array( $mime_type, $mime_types, true );
 	}
 
 }

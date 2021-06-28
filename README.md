@@ -32,7 +32,7 @@ to that domain via Nginx.
 ### Use statically.io URLs directly
 
 Ensure you have defined the `TRIBE_STORAGE_URL` constant in `wp-config.php` to your cloud provider's publicly
-accessible URL and it will be replaced to use Statically's CDN:
+accessible URL and it will be replaced to use Statically's CDN for images only:
 
 > **NOTE:** Image URLs are cached, ensure your flush your object cache if you make any changes to the following
 > defines.
@@ -44,7 +44,7 @@ define( 'TRIBE_STORAGE_URL', 'https://account.blob.core.windows.net/container' )
 
 URL rewriting would look as follows:
 
-- Original: `https://example.com/wp-content/uploads/sites/4/2021/06/image.jpg`
+- Original: `https://account.blob.core.windows.net/container/sites/4/2021/06/image.jpg`
 - Rewritten: `https://cdn.statically.io/img/account.blob.core.windows.net/f=auto,w=1024,h=1024/container/sites/4/2021/06/image.jpg`
 
 ### Use statically.io as a proxy via Nginx
@@ -57,7 +57,7 @@ define( 'TRIBE_STORAGE_STATICALLY_PROXY', true );
 
 **Sample Nginx Proxy**
 
-> Replace <PUBLIC CLOUD PROVIDER HOST + PATH> below with your cloud provider's URL. Using the example from 
+> Replace `account.blob.core.windows.net` below with your cloud provider's hostname. Using the example from 
 > above it would be: `account.blob.core.windows.net/container`
 
 ```nginx
