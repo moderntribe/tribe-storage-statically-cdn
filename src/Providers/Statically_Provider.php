@@ -29,8 +29,9 @@ class Statically_Provider implements Providable {
 	}
 
 	public function register(): void {
-		// Disable automatic creation of thumbnails, we generate them on the fly.
-		add_filter( 'intermediate_image_sizes_advanced', '__return_empty_array' );
+		add_filter( 'intermediate_image_sizes_advanced', function ( $new_sizes ) {
+			return $this->image->remove_uncropped_image_meta( $new_sizes );
+		}, 10, 1 );
 
 		add_filter( 'image_downsize', function ( $downsize, $id, $size ) {
 			return $this->image->downsize( $downsize, (int) $id, $size );

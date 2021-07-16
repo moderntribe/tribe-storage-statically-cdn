@@ -53,6 +53,7 @@ class ImageTest extends TestCase {
 		$url  = 'https://example.com/wp-content/uploads/sites/2/2021/06/test.jpg';
 		$size = 'medium';
 
+		Functions\when( 'wp_basename' )->justReturn( 'test.jpg' );
 		Functions\when( 'wp_cache_get' )->justReturn( false );
 		Functions\when( 'wp_cache_set' )->justReturn( false );
 		Functions\expect( 'wp_attachment_is_image' )->once()->with( 123 )->andReturn( true );
@@ -67,6 +68,9 @@ class ImageTest extends TestCase {
 		] );
 		Functions\expect( 'wp_get_attachment_url' )->once()->with( 123 )->andReturn( $url );
 		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/jpeg' );
+		Functions\expect( 'image_get_intermediate_size' )->once()->with( 123, $size )->andReturn( [
+			'url' => 'https://example.com/wp-content/uploads/sites/2/2021/06/test-150x150.jpg'
+		] );
 		Functions\expect( 'image_constrain_size_for_editor' )->once()->with( 150, 150, $size )->andReturn( [
 			150,
 			150,
@@ -77,10 +81,10 @@ class ImageTest extends TestCase {
 		$result = $image->downsize( false, 123, $size );
 
 		$this->assertSame( [
-			'https://example.com/wp-content/uploads/f=auto,w=150,h=150/sites/2/2021/06/test.jpg',
+			'https://example.com/wp-content/uploads/f=auto,w=150,h=150/sites/2/2021/06/test-150x150.jpg',
 			150,
 			150,
-			true
+			false
 		], $result );
 	}
 
@@ -94,12 +98,16 @@ class ImageTest extends TestCase {
 			250, // height
 		];
 
+		Functions\when( 'wp_basename' )->justReturn( 'test.jpg' );
 		Functions\when( 'wp_cache_get' )->justReturn( false );
 		Functions\when( 'wp_cache_set' )->justReturn( false );
 		Functions\expect( 'wp_attachment_is_image' )->once()->with( 123 )->andReturn( true );
 		Functions\expect( 'wp_get_attachment_metadata' )->once()->with( 123 )->andReturn( [] );
 		Functions\expect( 'wp_get_attachment_url' )->once()->with( 123 )->andReturn( $url );
 		Functions\expect( 'get_post_mime_type' )->once()->with( 123 )->andReturn( 'image/jpeg' );
+		Functions\expect( 'image_get_intermediate_size' )->once()->with( 123, $size )->andReturn( [
+			'url' => 'https://example.com/wp-content/uploads/sites/2/2021/06/test-250x250.jpg'
+		] );
 		Functions\expect( 'image_constrain_size_for_editor' )->once()->with( 250, 250, $size )->andReturn( [
 			250,
 			250,
@@ -108,10 +116,10 @@ class ImageTest extends TestCase {
 
 		$image = new Image();
 
-		$result = $image->downsize( false, 123, $size );
+		$result = $image->downsize( true, 123, $size );
 
 		$this->assertSame( [
-			'https://example.com/wp-content/uploads/f=auto,w=250,h=250/sites/2/2021/06/test.jpg',
+			'https://example.com/wp-content/uploads/f=auto,w=250,h=250/sites/2/2021/06/test-250x250.jpg',
 			250,
 			250,
 			true
@@ -407,6 +415,40 @@ class ImageTest extends TestCase {
 		];
 
 		$this->assertSame( $expected, $results );
+	}
+
+	public function test_it_removes_uncropped_image_sizes() {
+		$original_sizes = [
+			'thumbnail' => [
+				'width'  => 150,
+				'height' => 150,
+				'crop'   => true,
+			],
+			'medium'    => [
+				'width'  => 300,
+				'height' => 300,
+				'crop'   => false,
+			],
+			'large'     => [
+				'width'  => 600,
+				'height' => 500,
+				'crop'   => false,
+			],
+		];
+
+		$image = new Image();
+
+		$sizes = $image->remove_uncropped_image_meta( $original_sizes );
+		$expected = [
+			'thumbnail' => [
+				'width'  => 150,
+				'height' => 150,
+				'crop'   => true,
+			],
+		];
+
+		$this->assertCount( 1, $sizes );
+		$this->assertSame( $expected, $sizes );
 	}
 
 }
