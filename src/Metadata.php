@@ -56,6 +56,12 @@ class Metadata {
 		$file                       = basename( $path );
 
 		foreach ( $intermediate_image_sizes as $s ) {
+
+			if ( isset( $data['sizes'][ $s ] ) ) {
+				$sizes[ $s ] = $data['sizes'][ $s ];
+				continue;
+			}
+
 			$sizes[ $s ] = [
 				'width'  => '',
 				'height' => '',
