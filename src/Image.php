@@ -115,8 +115,8 @@ class Image {
 			[ $width, $height ] = $size;
 		}
 
-		$url              = wp_get_attachment_url( $id );
-		$intermediate     = image_get_intermediate_size( $id, $size );
+		$url          = wp_get_attachment_url( $id );
+		$intermediate = image_get_intermediate_size( $id, $size );
 
 		if ( $intermediate ) {
 			$url = $intermediate['url'];
