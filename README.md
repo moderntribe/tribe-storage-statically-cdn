@@ -149,7 +149,7 @@ Option 2: Make the `tribe/storage/plugin/statically/create_thumbnails` filter re
 add_filter( 'tribe/storage/plugin/statically/create_thumbnails', '__return_false' );
 ```
 
-> NOTE: Don't forget to clear object caching and regenerate thumbnails each time this option is swaped.
+> NOTE: Don't forget to clear object caching and regenerate thumbnails each time this option is swapped.
 
 ## Automated Testing
 
