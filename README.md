@@ -3,8 +3,8 @@
 [![PHPCS + Unit Tests](https://github.com/moderntribe/tribe-storage-statically-cdn/actions/workflows/pull-request.yml/badge.svg)](https://github.com/moderntribe/tribe-storage-statically-cdn/actions/workflows/pull-request.yml)
 ![php 7.3+](https://img.shields.io/badge/php-min%207.3-red.svg)
 
-Provides dynamic image sizing via [statically.io](https://statically.io/) and disables WordPress's automatic 
-thumbnail creation.
+Provides dynamic image sizing and optimization via [statically.io](https://statically.io/) and only creates WordPress thumbnails 
+for images that require hard cropping.
 
 ## Installation Composer v1
 
@@ -130,6 +130,26 @@ URL rewriting would look as follows, and proxied to Statically behind the scenes
 - Original: `https://example.com/wp-content/uploads/sites/4/2021/06/image.jpg`
 - Rewritten: `https://example.com/wp-content/uploads/f=auto,w=1024,h=1024/sites/4/2021/06/image.jpg`
 - Proxied URL: `https://cdn.statically.io/img/account.blob.core.windows.net/f=auto,w=1024,h=1024/container/sites/4/2021/06/image.jpg`
+
+## Disable WordPress thumbnail creation
+
+If you're not concerned with exact cropping, you can let statically.io resize your image based with keeping the same
+dimension ratio and disable thumbnail creation to see a large performance boost when uploading new images. 
+
+For this you have two options:
+
+Option 1: Add this define to `wp-config.php`
+```php
+define( 'TRIBE_STORAGE_STATICALLY_CREATE_THUMBNAILS', false );
+```
+
+Option 2: Make the `tribe/storage/plugin/statically/create_thumbnails` filter return false, e.g.
+
+```php
+add_filter( 'tribe/storage/plugin/statically/create_thumbnails', '__return_false' );
+```
+
+> NOTE: Don't forget to clear object caching and regenerate thumbnails each time this option is swaped.
 
 ## Automated Testing
 

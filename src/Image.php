@@ -12,6 +12,33 @@ class Image {
 	public const CACHE_GROUP = 'tribe_storage';
 
 	/**
+	 * Only generate thumbnails for cropped image sizes.
+	 *
+	 * @filter intermediate_image_sizes_advanced
+	 *
+	 * @param array $new_sizes
+	 *
+	 * @return array
+	 */
+	public function remove_uncropped_image_meta( array $new_sizes ): array {
+		if ( ! apply_filters( 'tribe/storage/plugin/statically/create_thumbnails', true ) ) {
+			return [];
+		}
+
+		foreach ( $new_sizes as $name => $size ) {
+			$crop = $size['crop'] ?? false;
+
+			if ( true === $crop ) {
+				continue;
+			}
+
+			unset( $new_sizes[ $name ] );
+		}
+
+		return $new_sizes;
+	}
+
+	/**
 	 * Update the main attachment URL depending on the proxy strategy
 	 * being used.
 	 *
@@ -88,7 +115,12 @@ class Image {
 			[ $width, $height ] = $size;
 		}
 
-		$url = wp_get_attachment_url( $id );
+		$url          = wp_get_attachment_url( $id );
+		$intermediate = image_get_intermediate_size( $id, $size );
+
+		if ( $intermediate ) {
+			$url = $intermediate['url'];
+		}
 
 		/**
 		 * Filter statically.io params.
@@ -154,7 +186,7 @@ class Image {
 			$proxy_url,
 			$width,
 			$height,
-			true,
+			$downsize,
 		], $id, $size );
 
 		wp_cache_set( $cache_key, $data, self::CACHE_GROUP );

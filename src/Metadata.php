@@ -56,6 +56,14 @@ class Metadata {
 		$file                       = basename( $path );
 
 		foreach ( $intermediate_image_sizes as $s ) {
+			// Only use existing sizes if we're generating cropped thumbnails
+			if ( apply_filters( 'tribe/storage/plugin/statically/create_thumbnails', true ) ) {
+				if ( isset( $data['sizes'][ $s ] ) ) {
+					$sizes[ $s ] = $data['sizes'][ $s ];
+					continue;
+				}
+			}
+
 			$sizes[ $s ] = [
 				'width'  => '',
 				'height' => '',
