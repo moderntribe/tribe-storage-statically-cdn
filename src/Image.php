@@ -28,9 +28,11 @@ class Image {
 		foreach ( $new_sizes as $name => $size ) {
 			$crop = $size['crop'] ?? false;
 
-			if ( ! $crop ) {
-				unset( $new_sizes[ $name ] );
+			if ( true === $crop ) {
+				continue;
 			}
+
+			unset( $new_sizes[ $name ] );
 		}
 
 		return $new_sizes;
@@ -114,7 +116,6 @@ class Image {
 		}
 
 		$url              = wp_get_attachment_url( $id );
-		$img_url_basename = wp_basename( $url );
 		$intermediate     = image_get_intermediate_size( $id, $size );
 
 		if ( $intermediate ) {
