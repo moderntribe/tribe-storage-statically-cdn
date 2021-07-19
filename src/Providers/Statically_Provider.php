@@ -29,6 +29,25 @@ class Statically_Provider implements Providable {
 	}
 
 	public function register(): void {
+
+		/**
+		 * Determine if we should create thumbnails for WordPress images that require cropping
+		 * as statically.io does not support cropping ability the way WordPress crops images.
+		 *
+		 * If your image sizes do not require cropping or or you don't care about cropping you
+		 * can disable this for an extra performance boost when uploading files as the system
+		 * only needs to create a single image.
+		 *
+		 * @param bool $create Whether we should create cropped thumbnails or not
+		 */
+		add_filter( 'tribe/storage/plugin/statically/create_thumbnails', static function ( bool $create ): bool {
+			if ( ! defined( 'TRIBE_STORAGE_STATICALLY_CREATE_THUMBNAILS' ) ) {
+				return true;
+			}
+
+			return (bool) TRIBE_STORAGE_STATICALLY_CREATE_THUMBNAILS;
+		}, 9, 1 );
+
 		add_filter( 'intermediate_image_sizes_advanced', function ( $new_sizes ) {
 			return $this->image->remove_uncropped_image_meta( $new_sizes );
 		}, 10, 1 );

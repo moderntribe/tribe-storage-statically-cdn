@@ -2,6 +2,7 @@
 
 namespace Tribe\Storage\Plugin\Statically\Tests\Unit;
 
+use Brain\Monkey\Filters;
 use Brain\Monkey\Functions;
 use Tribe\Storage\Plugin\Statically\Image;
 use Tribe\Storage\Plugin\Statically\Tests\TestCase;
@@ -449,6 +450,36 @@ class ImageTest extends TestCase {
 
 		$this->assertCount( 1, $sizes );
 		$this->assertSame( $expected, $sizes );
+	}
+
+	public function test_it_ignores_thumbnail_generation() {
+		$original_sizes = [
+			'thumbnail' => [
+				'width'  => 150,
+				'height' => 150,
+				'crop'   => true,
+			],
+			'medium'    => [
+				'width'  => 300,
+				'height' => 300,
+				'crop'   => false,
+			],
+			'large'     => [
+				'width'  => 600,
+				'height' => 500,
+				'crop'   => false,
+			],
+		];
+
+		// Disable cropped thumbnail creation
+		Filters\expectApplied( 'tribe/storage/plugin/statically/create_thumbnails' )
+			->once()
+			->andReturn( false );
+
+		$image = new Image();
+		$sizes = $image->remove_uncropped_image_meta( $original_sizes );
+
+		$this->assertEmpty( $sizes );
 	}
 
 }

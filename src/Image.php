@@ -21,6 +21,10 @@ class Image {
 	 * @return array
 	 */
 	public function remove_uncropped_image_meta( array $new_sizes ): array {
+		if ( ! apply_filters( 'tribe/storage/plugin/statically/create_thumbnails', true ) ) {
+			return [];
+		}
+
 		foreach ( $new_sizes as $name => $size ) {
 			$crop = $size['crop'] ?? false;
 
