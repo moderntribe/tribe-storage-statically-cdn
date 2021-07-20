@@ -85,7 +85,7 @@ class ImageTest extends TestCase {
 			'https://example.com/wp-content/uploads/f=auto,w=150,h=150/sites/2/2021/06/test-150x150.jpg',
 			150,
 			150,
-			false
+			true
 		], $result );
 	}
 
