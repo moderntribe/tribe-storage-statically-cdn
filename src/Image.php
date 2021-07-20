@@ -186,7 +186,7 @@ class Image {
 			$proxy_url,
 			$width,
 			$height,
-			$downsize,
+			true,
 		], $id, $size );
 
 		wp_cache_set( $cache_key, $data, self::CACHE_GROUP );
